@@ -46,7 +46,7 @@ serveResolve :: SqliteConnectionInfo -> Server ResolverApi
 serveResolve = resolveUrl
 
 server :: SqliteConnectionInfo -> Server ShortenerAPI
-server sqliteConnectionInfo = serveResolve sqliteConnectionInfo :<|> serveShorten sqliteConnectionInfo
+server sqliteConnectionInfo = serveShorten sqliteConnectionInfo :<|> serveResolve sqliteConnectionInfo
 
 application :: SqliteConnectionInfo -> Application
 application sqliteConnectionInfo req respond = do

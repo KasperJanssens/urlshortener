@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module DatabaseSpec where
+module Database.DatabaseSpec where
 
 import           Control.Exception         (bracket)
 import           Data.Text                 (Text)

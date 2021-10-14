@@ -20,8 +20,8 @@ type ShortenApi = ReqBody '[JSON] NewUrl :> Post '[JSON] Text
 
 --Separate route for resolving
 type ShortenerAPI =
-  "resolve" :> ResolverApi
-    :<|> "shorten" :> ShortenApi
+  "shorten" :> ShortenApi :<|>
+     ResolverApi
 
 api :: Proxy ShortenerAPI
 api = Proxy

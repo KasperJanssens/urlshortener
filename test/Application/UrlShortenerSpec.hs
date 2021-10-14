@@ -1,9 +1,9 @@
-module ShortenerSpec where
+module Application.UrlShortenerSpec where
 
-import Test.Hspec
-import Test.Hspec.QuickCheck
 import qualified Application.UrlShortener as UrlShortener
-import Test.QuickCheck (getNonNegative)
+import           Test.Hspec
+import           Test.Hspec.QuickCheck
+import           Test.QuickCheck          (getNonNegative)
 
 spec :: Spec
 spec = describe "Shortener Spec" $ do

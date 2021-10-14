@@ -4,10 +4,6 @@ import           Data.Int                   (Int64)
 import           Data.List                  as List
 import           Data.Maybe                 (catMaybes, isJust, isNothing)
 import qualified Data.Text                  as Text
-import qualified Data.Text.Lazy             as LazyText
-import qualified Data.Text.Lazy.Builder     as TextBuilder
-import qualified Data.Text.Lazy.Builder.Int as TextBuilder
-import qualified Data.Text.Read             as TextRead
 import           Domain.ShortenedUrl        (ShortenedUrl (..))
 
 dictionary :: [Char]
@@ -99,22 +95,22 @@ toChar i
 fromChar :: Char -> Maybe Int64
 fromChar c = fromIntegral <$> List.elemIndex c dictionary
 
-calculateBase62Internal :: Int64 -> [Int64] -> [Int64]
-calculateBase62Internal orig curList =
+calculateInBase62Internal :: Int64 -> [Int64] -> [Int64]
+calculateInBase62Internal orig curList =
   let (res, modulo) = divMod orig 62
    in let newList = modulo : curList
        in if res >= 62
-            then calculateBase62Internal res newList
+            then calculateInBase62Internal res newList
             else res : newList
 
 calculateInBase62 :: Int64 -> [Int64]
-calculateInBase62 orig = calculateBase62Internal orig []
+calculateInBase62 orig = calculateInBase62Internal orig []
 
 calculateInBase10 :: [Int64] -> Int64
-calculateInBase10 l = calculateBase10Internal $ reverse l
+calculateInBase10 l = calculateInBase10Internal $ reverse l
 
-calculateBase10Internal :: [Int64] -> Int64
-calculateBase10Internal [] = 0
-calculateBase10Internal l =
+calculateInBase10Internal :: [Int64] -> Int64
+calculateInBase10Internal [] = 0
+calculateInBase10Internal l =
   let allUp = (* 62) <$> tail l
-   in head l + calculateBase10Internal allUp
+   in head l + calculateInBase10Internal allUp
