@@ -23,10 +23,11 @@ import           Server.ApiType            (ResolverApi, ShortenApi,
                                             ShortenerAPI, UpApi, api)
 import           Server.NewUrl             (NewUrl (..))
 
+
+
 postUrlToShorten :: SqliteConnectionInfo -> NewUrl -> Handler Text
 postUrlToShorten sqliteConnectionInfo (NewUrl url) = do
-  rowId <- liftIO $ UrlDatabase.insertUrl sqliteConnectionInfo $ Url url
-  let maybeShortenedUrl = UrlShortener.shortenUrl rowId
+  maybeShortenedUrl <- liftIO $ UrlShortener.shortenUrl sqliteConnectionInfo (Url url)
   shortenedUrl <- maybe (Servant.throwError Servant.err404 {Servant.errBody = "Cannot shorten url"}) pure maybeShortenedUrl
   return $ coerce shortenedUrl
 
@@ -35,13 +36,11 @@ serveShorten = postUrlToShorten
 
 resolveUrl :: SqliteConnectionInfo -> Text -> Handler NoContent
 resolveUrl sqliteConnectionInfo shortUrl =
-  let maybeRowId = UrlShortener.shortenedToRowId (coerce shortUrl)
-   in do
-        rowId <- maybe (Servant.throwError Servant.err404 {Servant.errBody = "Unknown short url"}) pure maybeRowId
-        maybeStoredUrl <- liftIO $ UrlDatabase.findUrl sqliteConnectionInfo rowId
-        storedUrl <- maybe (Servant.throwError Servant.err404 {Servant.errBody = "Unknown short url"}) pure maybeStoredUrl
-        let locationHeader = (Header.hLocation, TextEncoding.encodeUtf8 storedUrl)
-        Servant.throwError $ Servant.err301 {Servant.errHeaders = [locationHeader]}
+  do
+    maybeStoredUrl <- liftIO $ UrlShortener.resolveUrl sqliteConnectionInfo (coerce shortUrl)
+    storedUrl <- maybe (Servant.throwError Servant.err404 {Servant.errBody = "Unknown short url"}) pure maybeStoredUrl
+    let locationHeader = (Header.hLocation, TextEncoding.encodeUtf8 storedUrl)
+    Servant.throwError $ Servant.err301 {Servant.errHeaders = [locationHeader]}
 
 serveResolve :: SqliteConnectionInfo -> Server ResolverApi
 serveResolve = resolveUrl

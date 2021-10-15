@@ -1,0 +1,36 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor Actor
+participant Server
+participant UrlShortener
+participant UrlDatabase
+
+Actor -> Server : shorten url
+Server -> UrlShortener: shorten sqliteInfo url
+UrlShortener -> UrlDatabase : checkForDuplicates sqliteInfo url
+UrlDatabase --> UrlShortener : maybeExistingRowId
+
+alt already present
+UrlShortener -> UrlShortener : shorten existingRowId
+else
+UrlShortener -> UrlDatabase : insertUrl sqliteInfo url
+UrlDatabase --> UrlShortener : newRowId
+UrlShortener -> UrlShortener : shorten newRowId
+end
+UrlShortener --> Server : shortenedUrl
+Server -> Actor : 200 shortendUrl
+
+Actor -> Server : resolve shortendUrl
+Server -> UrlShortener : resolve sqliteInfo shortenedUrl
+UrlShortener -> UrlShortener : calculateRowId shortenedUrl
+UrlShortener -> UrlDatabase : findUrl sqliteInfo rowId
+UrlDatabase --> UrlShortener : maybeUrl
+UrlShortener --> Server : maybeUrl
+alt url found
+  Server --> Actor : 301 Location url
+else
+  Server --> Actor : 404 not found
+end
+@enduml

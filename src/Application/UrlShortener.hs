@@ -1,10 +1,15 @@
-module Application.UrlShortener (calculateInBase62, calculateInBase10, shortenUrl, shortenedToRowId) where
+module Application.UrlShortener (calculateInBase62, calculateInBase10, shortenUrl, resolveUrl) where
 
-import           Data.Int                   (Int64)
-import           Data.List                  as List
-import           Data.Maybe                 (catMaybes, isJust, isNothing)
-import qualified Data.Text                  as Text
-import           Domain.ShortenedUrl        (ShortenedUrl (..))
+import           Control.Monad.IO.Class  (liftIO)
+import           Data.Int                (Int64)
+import           Data.List               as List
+import           Data.Maybe              (catMaybes, isJust, isNothing)
+import           Data.Text               (Text)
+import qualified Data.Text               as Text
+import           Database.Persist.Sqlite (SqliteConnectionInfo)
+import qualified Database.UrlDatabase    as UrlDatabase
+import           Domain.ShortenedUrl     (ShortenedUrl (..))
+import           Domain.Url              (Url (..))
 
 dictionary :: [Char]
 dictionary =
@@ -72,20 +77,32 @@ dictionary =
     'Z'
   ]
 
-shortenUrl :: Int64 -> Maybe ShortenedUrl
-shortenUrl i =
-  let maybeChars = toChar <$> calculateInBase62 i
-   in if isJust (List.findIndex isNothing maybeChars)
-        then Nothing
-        else Just $ ShortenedUrl $ Text.pack $ catMaybes maybeChars
+shortenUrl' :: Int64 -> Maybe ShortenedUrl
+shortenUrl' rowId =
+  let maybeChars = toChar <$> calculateInBase62 rowId in
+  if isJust (List.findIndex isNothing maybeChars)
+    then Nothing
+    else Just $ ShortenedUrl $ Text.pack $ catMaybes maybeChars
 
-shortenedToRowId :: ShortenedUrl -> Maybe Int64
-shortenedToRowId (ShortenedUrl url) =
+shortenUrl :: SqliteConnectionInfo -> Url -> IO (Maybe ShortenedUrl)
+shortenUrl sqliteConnectionInfo url = do
+  maybeRowId <- UrlDatabase.checkExisting sqliteConnectionInfo url
+  case maybeRowId of
+    Nothing -> do
+                 rowId <- liftIO $ UrlDatabase.insertUrl sqliteConnectionInfo url
+                 pure $ shortenUrl' rowId
+    Just rowId -> pure $ shortenUrl' rowId                 
+
+
+resolveUrl :: SqliteConnectionInfo -> ShortenedUrl -> IO (Maybe Text)
+resolveUrl sqliteConnectionInfo (ShortenedUrl url) =
   let chars = Text.unpack url
    in let maybeNumbers = fromChar <$> chars
        in if isJust (List.findIndex isNothing maybeNumbers)
-            then Nothing
-            else Just $ calculateInBase10 $ catMaybes maybeNumbers
+            then pure Nothing
+            else do
+               let rowId = calculateInBase10 $ catMaybes maybeNumbers
+               UrlDatabase.findUrl sqliteConnectionInfo rowId
 
 toChar :: Int64 -> Maybe Char
 toChar i

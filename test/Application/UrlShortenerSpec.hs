@@ -1,9 +1,12 @@
 module Application.UrlShortenerSpec where
 
-import qualified Application.UrlShortener as UrlShortener
+import qualified Application.UrlShortener  as UrlShortener
+import           Data.Maybe                (fromJust, isJust)
+import qualified TestUtil
+import           Domain.Url                (Url (..))
 import           Test.Hspec
 import           Test.Hspec.QuickCheck
-import           Test.QuickCheck          (getNonNegative)
+import           Test.QuickCheck.Instances ()
 
 spec :: Spec
 spec = describe "Shortener Spec" $ do
@@ -12,6 +15,8 @@ spec = describe "Shortener Spec" $ do
       let res = UrlShortener.calculateInBase10 . UrlShortener.calculateInBase62 $ x
       res `shouldBe` x
   prop "shorten and unshorten" $
-    \x -> do
-      let res = UrlShortener.shortenUrl (getNonNegative x) >>= UrlShortener.shortenedToRowId
-      res `shouldBe` Just (getNonNegative x)
+    \randomUrl -> TestUtil.withDatabase $ \sqliteConnectionInfo -> do
+      shortenedUrl <- UrlShortener.shortenUrl sqliteConnectionInfo (Url randomUrl)
+      shortenedUrl `shouldSatisfy` isJust
+      resolvedUrl <- UrlShortener.resolveUrl sqliteConnectionInfo $ fromJust shortenedUrl
+      resolvedUrl `shouldBe` Just randomUrl

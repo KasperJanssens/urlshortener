@@ -100,8 +100,10 @@ test-suite urlshortener-test
   main-is: Spec.hs
   other-modules:
       Application.UrlShortenerSpec
+      Client
       Database.DatabaseSpec
       Server.ServerSpec
+      TestUtil
       Paths_urlshortener
   hs-source-dirs:
       test
