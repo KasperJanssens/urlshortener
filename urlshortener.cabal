@@ -43,12 +43,14 @@ library
     , base >=4.7 && <5
     , directory ==1.3.6.0
     , hspec ==2.7.10
+    , http-client ==0.6.4.1
     , http-types ==0.12.3
     , monad-logger ==0.3.36
     , mtl ==2.2.2
     , persistent ==2.13.1.2
     , persistent-sqlite ==2.13.0.3
     , persistent-template ==2.12.0.0
+    , port-utils ==0.2.1.0
     , quickcheck-instances ==0.3.25.2
     , servant ==0.18.3
     , servant-client ==0.18.3
@@ -73,12 +75,14 @@ executable urlshortener-exe
     , base >=4.7 && <5
     , directory ==1.3.6.0
     , hspec ==2.7.10
+    , http-client ==0.6.4.1
     , http-types ==0.12.3
     , monad-logger ==0.3.36
     , mtl ==2.2.2
     , persistent ==2.13.1.2
     , persistent-sqlite ==2.13.0.3
     , persistent-template ==2.12.0.0
+    , port-utils ==0.2.1.0
     , quickcheck-instances ==0.3.25.2
     , servant ==0.18.3
     , servant-client ==0.18.3
@@ -97,6 +101,7 @@ test-suite urlshortener-test
   other-modules:
       Application.UrlShortenerSpec
       Database.DatabaseSpec
+      Server.ServerSpec
       Paths_urlshortener
   hs-source-dirs:
       test
@@ -107,12 +112,14 @@ test-suite urlshortener-test
     , base >=4.7 && <5
     , directory ==1.3.6.0
     , hspec ==2.7.10
+    , http-client ==0.6.4.1
     , http-types ==0.12.3
     , monad-logger ==0.3.36
     , mtl ==2.2.2
     , persistent ==2.13.1.2
     , persistent-sqlite ==2.13.0.3
     , persistent-template ==2.12.0.0
+    , port-utils ==0.2.1.0
     , quickcheck-instances ==0.3.25.2
     , servant ==0.18.3
     , servant-client ==0.18.3

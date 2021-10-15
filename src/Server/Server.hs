@@ -6,6 +6,7 @@ import qualified Application.UrlShortener  as UrlShortener
 import           Control.Monad.Reader
 import           Data.Coerce               (coerce)
 import           Data.Text                 (Text)
+import qualified Data.Text                 as Text
 import qualified Data.Text.Encoding        as TextEncoding
 import           Database.Persist.Sqlite   (SqliteConnectionInfo)
 import qualified Database.Persist.Sqlite   as Sqlite
@@ -19,7 +20,7 @@ import           Servant                   (Application, Handler, Server)
 import qualified Servant
 import           Servant.API
 import           Server.ApiType            (ResolverApi, ShortenApi,
-                                            ShortenerAPI, api)
+                                            ShortenerAPI, UpApi, api)
 import           Server.NewUrl             (NewUrl (..))
 
 postUrlToShorten :: SqliteConnectionInfo -> NewUrl -> Handler Text
@@ -45,8 +46,11 @@ resolveUrl sqliteConnectionInfo shortUrl =
 serveResolve :: SqliteConnectionInfo -> Server ResolverApi
 serveResolve = resolveUrl
 
+serveUp :: Server UpApi
+serveUp = return NoContent
+
 server :: SqliteConnectionInfo -> Server ShortenerAPI
-server sqliteConnectionInfo = serveShorten sqliteConnectionInfo :<|> serveResolve sqliteConnectionInfo
+server sqliteConnectionInfo = serveShorten sqliteConnectionInfo :<|> serveUp :<|> serveResolve sqliteConnectionInfo
 
 application :: SqliteConnectionInfo -> Application
 application sqliteConnectionInfo req respond = do

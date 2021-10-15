@@ -18,9 +18,12 @@ type ResolverApi = Capture "id" Text :> Get '[JSON] NoContent
 --Returns a simple text of the id (not the full url as in that case the application needs to know its url)
 type ShortenApi = ReqBody '[JSON] NewUrl :> Post '[JSON] Text
 
+type UpApi = Get '[JSON] NoContent
+
 --Separate route for resolving
 type ShortenerAPI =
   "shorten" :> ShortenApi :<|>
+  "isUp" :> UpApi :<|>
      ResolverApi
 
 api :: Proxy ShortenerAPI
